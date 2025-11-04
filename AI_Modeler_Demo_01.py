@@ -42,47 +42,6 @@ print("✅ Repo reset and force-pushed successfully.")
 import os, shutil
 from git import Repo
 
-username = "user01"
-token = os.getenv("GITHUB_TOKEN")
-user = "aimodeler-demo"
-
-repo_dir = f"/repos/{username}"
-file = "AI_Modeler_Demo_01.py"
-url = f"https://x-access-token:{token}@github.com/{user}/{username}.git"
-
-# Remove existing repo and reclone fresh
-if os.path.exists(repo_dir):
-    shutil.rmtree(repo_dir)
-
-repo = Repo.clone_from(url, repo_dir)
-
-# Forcefully overwrite the file
-dest_file = os.path.join(repo_dir, file)
-if os.path.exists(dest_file):
-    os.remove(dest_file)
-shutil.copy(file, dest_file)
-
-# Stage and commit
-repo.git.add(all=True)
-repo.index.commit("Force update: overwrite remote with local AI_Modeler_Demo_01.py")
-
-# Force push to GitHub
-repo.remote("origin").push(force=True)
-
-print("✅ Remote file forcibly replaced and pushed.")
-
-
-
-
-!git status
-!git add .
-!git commit -m "Your commit message"
-!git push origin main
-
-
-import os, shutil
-from git import Repo
-
 user = "aimodeler-demo"
 repo_name = "user01"
 token = os.getenv("GITHUB_TOKEN")
@@ -97,6 +56,3 @@ if os.path.exists(repo_dir):
 # Reclone fresh from GitHub
 Repo.clone_from(url, repo_dir)
 print(f"✅ Reset complete: cloned fresh copy to {repo_dir}")_01
-
-
-print(token)
