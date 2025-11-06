@@ -1,58 +1,41 @@
-!git clone https://github.com/aimodeler-demo/user01.git /root/repos/user01
-%cd /root/repos/user01
+import os
+import boto3
 
+aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
 
+aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 
-!pwd
-!ls -a
+bucket_name = "aimodeler-demo-llm-documents"
 
+download_dir = 'documents'
+os.makedirs(download_dir, exist_ok=True)
 
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key
+)
 
-import os, shutil
-from git import Repo
+response = s3.list_objects_v2(Bucket=bucket_name)
 
-username = "user01"
-token = os.getenv("GITHUB_TOKEN")
-user = "aimodeler-demo"
+if 'Contents' in response:
+    for obj in response['Contents']:
+        key = obj['Key']
+        filename = os.path.basename(key)
+        local_path = os.path.join(download_dir, filename)
+        print(f"Downloading: {key} -> {local_path}")
+        s3.download_file(bucket_name, key, local_path)
+else:
+    print("No files found in the bucket.")
 
-repo_dir = f"/repos/{username}"
-url = f"https://x-access-token:{token}@github.com/{user}/{username}.git"
+import os
+import openai
+import tiktoken
 
-# 1️⃣ Delete any old local repo (to avoid merge confusion)
-if os.path.exists(repo_dir):
-    shutil.rmtree(repo_dir)
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# 2️⃣ Reclone fresh from GitHub
-repo = Repo.clone_from(url, repo_dir)
+LLM_MODEL="gpt-4o"
 
-# 3️⃣ Copy your updated file in
-file = "AI_Modeler_Demo_01.py"
-shutil.copy(file, os.path.join(repo_dir, file))
+TOKENIZER = tiktoken.encoding_for_model("text-embedding-3-small")
 
-# 4️⃣ Add + commit
-repo.git.add(all=True)
-repo.index.commit("Force sync: overwrite remote with local changes")
-
-# 5️⃣ Force push (⚠️ overwrites GitHub)
-repo.remote("origin").push(force=True)
-
-print("✅ Repo reset and force-pushed successfully.")
-
-
-import os, shutil
-from git import Repo
-
-user = "aimodeler-demo"
-repo_name = "user01"
-token = os.getenv("GITHUB_TOKEN")
-
-repo_dir = f"/repos/{repo_name}"
-url = f"https://x-access-token:{token}@github.com/{user}/{repo_name}.git"
-
-# Delete old local repo if it exists
-if os.path.exists(repo_dir):
-    shutil.rmtree(repo_dir)
-
-# Reclone fresh from GitHub
-Repo.clone_from(url, repo_dir)
-print(f"✅ Reset complete: cloned fresh copy to {repo_dir}")_01
+EMBED_MODEL="text-embedding-3-small"
