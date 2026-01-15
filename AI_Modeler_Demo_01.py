@@ -1,15 +1,36 @@
 !ls /repos
 
-!cd /repos
+import os
+token = os.environ["GITHUB_TOKEN"]
 
 import os
-import openai
-import tiktoken
+from git import Repo
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+username = "user01"
+file = "AI_Modeler_Demo_01.py"
 
-LLM_MODEL="gpt-4o"
+token = os.getenv("GITHUB_TOKEN")
 
-TOKENIZER = tiktoken.encoding_for_model("text-embedding-3-small")
+url = f"https://x-access-token:{token}@github.com/aimodeler-demo/{username}.git"
+repo_dir = f"/repos/{username}"
 
-EMBED_MODEL="text-embedding-3-small"
+
+if not os.path.exists(repo_dir):
+    # Clone if folder doesn't exist
+    repo = Repo.clone_from(url, repo_dir)
+else:
+    # Open existing repo
+    repo = Repo(repo_dir)
+
+
+file_path = os.path.join(repo_dir, file)
+
+# ✅ Copy your existing AI_Modeler_Demo.py into the repo before pushing
+import shutil
+shutil.copy(file, file_path)
+
+# Then push it
+repo.git.add(all=True)
+repo.index.commit("Auto-update: AI model")
+repo.remote(name="origin").set_url(f"https://x-access-token:{token}@github.com/aimodeler-demo/{username}.git")
+repo.remote(name="origin").push()
